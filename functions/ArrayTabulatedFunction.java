@@ -3,7 +3,6 @@ package functions;
 import java.io.*;
 
 public class ArrayTabulatedFunction implements TabulatedFunction{
-    private static final long serialVersionUID = 1L;
     private static final double EPSILON = 1e-10;
 
     private FunctionPoint[] points;
@@ -91,28 +90,25 @@ public class ArrayTabulatedFunction implements TabulatedFunction{
             return Double.NaN;
         }
 
-        // бинарный поиск интервала
-        int left = 0;
-        int right = pointsCount - 1;
-
-        while (left <= right) {
-            int mid = (left + right) / 2;
-            if (Math.abs(points[mid].getX() - x) < EPSILON) {
-                return points[mid].getY();
-            } else if (points[mid].getX() < x) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
+        // проверяем точное совпадение
+        for (int i = 0; i < pointsCount; i++) {
+            if (Math.abs(points[i].getX() - x) < 1e-10) {
+                return points[i].getY();  // возвращаем Y существующей точки
             }
         }
 
-        // линейная интерполяция
-        int index = (points[left].getX() < x) ? left + 1 : left;
-        FunctionPoint p1 = points[index - 1];
-        FunctionPoint p2 = points[index];
+        // если точного совпадения нет - ищем интервал для интерполяции
+        int i = 0;
+        while (i < pointsCount - 1 && points[i + 1].getX() < x) {
+            i++;
+        }
 
-        double k = (p2.getY() - p1.getY()) / (p2.getX() - p1.getX());
-        return k * (x - p1.getX()) + p1.getY();
+        // делаем линейную интерполяцию
+        FunctionPoint leftPoint = points[i];
+        FunctionPoint rightPoint = points[i + 1];
+
+        double k = (rightPoint.getY() - leftPoint.getY()) / (rightPoint.getX() - leftPoint.getX());
+        return k * (x - leftPoint.getX()) + leftPoint.getY();
     }
 
     // реализация методов интерфейса TabulatedFunction
@@ -248,6 +244,7 @@ public class ArrayTabulatedFunction implements TabulatedFunction{
         if (o instanceof ArrayTabulatedFunction) {
             ArrayTabulatedFunction arrayOther = (ArrayTabulatedFunction) o;
             for (int i = 0; i < pointsCount; i++) {
+                // Сравниваем точки через equals (уже исправлен с эпсилон)
                 if (!this.points[i].equals(arrayOther.points[i])) {
                     return false;
                 }

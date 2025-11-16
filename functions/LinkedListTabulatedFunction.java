@@ -2,7 +2,6 @@ package functions;
 import java.io.*;
 
 public class LinkedListTabulatedFunction implements TabulatedFunction {
-    private static final long serialVersionUID = 1L;
     private static final double EPSILON = 1e-10;
 
     // внутренний класс для узлов списка
@@ -156,9 +155,20 @@ public class LinkedListTabulatedFunction implements TabulatedFunction {
 
     @Override
     public double getFunctionValue(double x) {
-        if (x < getLeftDomainBorder() || x > getRightDomainBorder())
+        if (x < getLeftDomainBorder() || x > getRightDomainBorder()) {
             return Double.NaN;
+        }
 
+        // проверка точного совпадения
+        FunctionNode current = head.next;
+        while (current != head) {
+            if (Math.abs(current.point.getX() - x) < 1e-10) {
+                return current.point.getY();
+            }
+            current = current.next;
+        }
+
+        // поиск интервала и интерполяция
         for (int i = 0; i < pointsCount - 1; i++) {
             double x1 = getPointX(i);
             double x2 = getPointX(i + 1);
@@ -168,6 +178,7 @@ public class LinkedListTabulatedFunction implements TabulatedFunction {
                 return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
             }
         }
+
         return Double.NaN;
     }
 
@@ -261,13 +272,14 @@ public class LinkedListTabulatedFunction implements TabulatedFunction {
 
         if (this.getPointsCount() != other.getPointsCount()) return false;
 
-        // Оптимизация для LinkedListTabulatedFunction
+        // оптимизация для LinkedListTabulatedFunction
         if (o instanceof LinkedListTabulatedFunction) {
             LinkedListTabulatedFunction listOther = (LinkedListTabulatedFunction) o;
             FunctionNode currentThis = this.head.next;
             FunctionNode currentOther = listOther.head.next;
 
             while (currentThis != head && currentOther != listOther.head) {
+                // сравниваем точки через equals
                 if (!currentThis.point.equals(currentOther.point)) {
                     return false;
                 }
@@ -275,7 +287,7 @@ public class LinkedListTabulatedFunction implements TabulatedFunction {
                 currentOther = currentOther.next;
             }
         } else {
-            // Общий случай для любого TabulatedFunction
+            // общий случай для любого TabulatedFunction
             for (int i = 0; i < pointsCount; i++) {
                 FunctionPoint myPoint = this.getPoint(i);
                 FunctionPoint otherPoint = other.getPoint(i);

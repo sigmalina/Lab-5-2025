@@ -2,7 +2,7 @@ package functions;
 import java.io.Serializable;
 
 public class FunctionPoint implements Serializable, Cloneable {
-    private static final long serialVersionUID = 1L;
+    private static final double EPSILON = 1e-10;
 
     double x;
     double y;
@@ -53,8 +53,10 @@ public class FunctionPoint implements Serializable, Cloneable {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         FunctionPoint that = (FunctionPoint) obj;
-        return Double.compare(that.x, x) == 0 &&
-                Double.compare(that.y, y) == 0;
+
+        // сравнение double с машинным эпсилоном
+        return Math.abs(that.x - x) < EPSILON &&
+                Math.abs(that.y - y) < EPSILON;
     }
 
     @Override
